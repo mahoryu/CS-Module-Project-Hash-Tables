@@ -7,6 +7,8 @@ class HashTableEntry:
         self.value = value
         self.next = None
 
+    def __str__(self):
+        return f"[{self.key}, {self.value}] Next: {self.next}"
 
 # Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
@@ -26,6 +28,12 @@ class HashTable:
             capacity = MIN_CAPACITY
         self.capacity = capacity
         self.storage = [None] * capacity
+        self.elements = 0
+
+    def __str__ (self):
+        for item in self.storage:
+            print(item)
+        return ""
 
     def get_num_slots(self):
         """
@@ -48,13 +56,12 @@ class HashTable:
         # Your code here
         pass
 
-    def fnv1(self, key):
-        """
-        FNV-1 Hash, 64-bit
-        Implement this, and/or DJB2.
-        """
-        # Your code here
-        pass
+    # def fnv1(self, key):
+    #     """
+    #     FNV-1 Hash, 64-bit
+    #     Implement this, and/or DJB2.
+    #     """
+    #     # Your code here
 
 
     def djb2(self, key):
@@ -76,6 +83,16 @@ class HashTable:
         #return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
+    def find(self, node, key):
+        if node.key == key:
+            return node
+        else:
+            while node.next:
+                node = node.next
+                if node.key == key:
+                    return node
+            return None
+
     def put(self, key, value):
         """
         Store the value with the given key.
@@ -83,33 +100,79 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
-        self.storage[index] = HashTableEntry(key,value)
+        new_node = HashTableEntry(key,value)
+        # if empty add the node
+        if not self.storage[index]:
+            self.storage[index] = new_node
+            self.elements += 1
+        else:
+            temp = self.find(self.storage[index], key)
+            if temp:
+                temp.value = value
+            else:
+                new_node.next = self.storage[index]
+                self.storage[index] = new_node
+                self.elements += 1
 
     def delete(self, key):
         """
         Remove the value stored with the given key.
-
         Print a warning if the key is not found.
-
         Implement this.
         """
+
+        """
+        x check if the key is not there else print a not found message
+        - if hash not empty loop though the list to see if there
+        - if there move delete
+            - check if first, last or middle
+            - move the next link around to "delete" the found node
+        - if not same message
+        """
         index = self.hash_index(key)
-        self.storage[index] = None
+        bucket = self.storage[index]
+
+        if not bucket:
+            print("Key Not Found")
+        else:
+            # remove if the node is the head
+            if bucket.key == key:
+                self.storage[index] = bucket.next
+            else:
+                temp1 = bucket
+                temp2 = bucket.next
+                # loop through the list with 2 pointers and
+                # delete the node if the key is found
+                while temp2:
+                    if temp2.key == key:
+                        temp1.next = temp2.next
+                        return
+                    else:
+                        temp1 = temp1.next
+                        temp2 = temp2.next
+                # looped though whole list and didn't find it
+                # so print out the warning message
+                print("Key Not Found")
 
 
     def get(self, key):
         """
         Retrieve the value stored with the given key.
-
         Returns None if the key is not found.
-
         Implement this.
         """
         index = self.hash_index(key)
-        entry = self.storage[index]
-        if entry:
-            return entry.value
+        bucket = self.storage[index]
 
+        # if the slot is empty return None
+        if not bucket:
+            return None
+        else:
+            temp = self.find(bucket, key)
+            if temp:
+                return temp.value
+            else:
+                return None
 
     def resize(self, new_capacity):
         """
