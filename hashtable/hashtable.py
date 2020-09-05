@@ -42,7 +42,6 @@ class HashTable:
         but the number of slots in the main list.)
 
         One of the tests relies on this.
-
         Implement this.
         """
         return len(self.storage)
@@ -53,15 +52,13 @@ class HashTable:
         Return the load factor for this hash table.
         Implement this.
         """
-        # Your code here
-        pass
+        return self.elements / self.capacity
 
     # def fnv1(self, key):
     #     """
     #     FNV-1 Hash, 64-bit
     #     Implement this, and/or DJB2.
     #     """
-    #     # Your code here
 
 
     def djb2(self, key):
@@ -84,6 +81,10 @@ class HashTable:
         return self.djb2(key) % self.capacity
 
     def find(self, node, key):
+        """
+        Loops through the linked list to find the the node
+        with the correct key and returns None if not found.
+        """
         if node.key == key:
             return node
         else:
@@ -121,14 +122,6 @@ class HashTable:
         Implement this.
         """
 
-        """
-        x check if the key is not there else print a not found message
-        - if hash not empty loop though the list to see if there
-        - if there move delete
-            - check if first, last or middle
-            - move the next link around to "delete" the found node
-        - if not same message
-        """
         index = self.hash_index(key)
         bucket = self.storage[index]
 
@@ -138,6 +131,7 @@ class HashTable:
             # remove if the node is the head
             if bucket.key == key:
                 self.storage[index] = bucket.next
+                self.elements -= 1
             else:
                 temp1 = bucket
                 temp2 = bucket.next
@@ -146,6 +140,7 @@ class HashTable:
                 while temp2:
                     if temp2.key == key:
                         temp1.next = temp2.next
+                        self.elements -= 1
                         return
                     else:
                         temp1 = temp1.next
@@ -181,8 +176,27 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # make sure it stays at or above the min of 8 slots
+        if new_capacity < MIN_CAPACITY:
+            new_capacity = MIN_CAPACITY
 
+        # check if same size as current and end if it is
+        if new_capacity == self.get_num_slots():
+            return
+
+        # make a temp stoarge that is a copy of the current storage
+        temp_store = self.storage
+        # resize the current storage to an empty new_cap storage
+        self.storage = [None] * new_capacity
+
+        # loop through old storage and use hash functions to add
+        # them to the new storage
+        for node in temp_store:
+            if node:
+                self.put(node.key,node.value)
+                while node.next:
+                    node = node.next
+                    self.put(node.key,node.value)
 
 
 if __name__ == "__main__":
