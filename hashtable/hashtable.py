@@ -106,6 +106,8 @@ class HashTable:
         if not self.storage[index]:
             self.storage[index] = new_node
             self.elements += 1
+            if self.get_load_factor() > .7:
+                self.resize(self.capacity * 2)
         else:
             temp = self.find(self.storage[index], key)
             if temp:
@@ -114,6 +116,8 @@ class HashTable:
                 new_node.next = self.storage[index]
                 self.storage[index] = new_node
                 self.elements += 1
+                if self.get_load_factor() > .7:
+                    self.resize(self.capacity * 2)
 
     def delete(self, key):
         """
@@ -132,6 +136,8 @@ class HashTable:
             if bucket.key == key:
                 self.storage[index] = bucket.next
                 self.elements -= 1
+                if self.get_load_factor() < .2:
+                    self.resize(self.capacity / 2)
             else:
                 temp1 = bucket
                 temp2 = bucket.next
@@ -141,6 +147,8 @@ class HashTable:
                     if temp2.key == key:
                         temp1.next = temp2.next
                         self.elements -= 1
+                        if self.get_load_factor() < .2:
+                            self.resize(self.capacity / 2)
                         return
                     else:
                         temp1 = temp1.next
@@ -188,6 +196,9 @@ class HashTable:
         temp_store = self.storage
         # resize the current storage to an empty new_cap storage
         self.storage = [None] * new_capacity
+        self.capacity = new_capacity
+        # reset the number of elements as put() will add them back
+        self.elements = 0
 
         # loop through old storage and use hash functions to add
         # them to the new storage
